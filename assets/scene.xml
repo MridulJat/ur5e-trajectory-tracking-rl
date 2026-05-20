@@ -1,0 +1,44 @@
+<mujoco model="ur5e scene">
+  <include file="ur5e.xml"/>
+  <option gravity="0 0 -9.81" timestep="0.002"/>
+
+  <statistic center="0.3 0 0.4" extent="0.8"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global offwidth="1920" offheight="1080" azimuth="120" elevation="-20"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+
+    <!-- Alarm clock meshes -->
+    <mesh name="alarmclock" file="alarmclock.stl" scale="1.2 1.2 1.2"/>
+    <mesh name="contact0" file="contact0.stl" scale="1.2 1.2 1.2"/>
+    <material name="clock_mat" rgba="0.85 0.85 0.85 1" specular="0" shininess="0.1"/>     
+
+
+  </asset>
+
+  <worldbody>
+    <light pos="0 1 1.5" dir="0 1 -1" directional="true"/>
+
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+    <camera name="front_cam" pos="1.2 0.025 0.366" xyaxes="0.011 1.000 0.000 0.027 -0.000 1.000"/>
+    <camera name="overhead_cam" pos="0.496 0.134 2.0" xyaxes="1 0 0 0 1 0"/>
+
+    <!-- Table -->
+    <body name="table" pos="0.53 0 0.1">
+      <geom type="box" size="0.3 0.3 0.03" contype="1" conaffinity="1" friction="2 0.1 0.1"/>
+    </body>
+
+    <!-- Moving target marker - visual only, no collision -->
+    <body name="target" pos="0.5 0.0 0.6">
+      <geom name="target_geom" type="sphere" size="0.02" rgba="1 0 0 0.7" contype="0" conaffinity="0"/>
+    </body>
+
+  </worldbody>
+</mujoco>

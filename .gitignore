@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Virtual environment
+venv/
+pyvenv.cfg
+
+# Training artifacts
+logs/
+checkpoints/
+models/final_model.zip
+models/vecnormalize_final.pkl
+models/vecnormalize.pkl
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Video (host on YouTube instead)
+results/*.mp4
