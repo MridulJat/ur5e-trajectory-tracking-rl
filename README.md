@@ -1,6 +1,6 @@
 # UR5e Figure-Eight Tracking with Reinforcement Learning
 
-A UR5e robotic arm learning to trace a figure-eight in MuJoCo — trained from scratch using SAC, with observation noise and control delay baked in from day one.
+A UR5e robotic arm learning to trace a figure-eight in MuJoCo, trained from scratch using SAC with observation noise and control delay baked in from day one.
 
 ---
 
@@ -8,9 +8,10 @@ A UR5e robotic arm learning to trace a figure-eight in MuJoCo — trained from s
 
 The arm starts from a resting position and learns, purely through trial and error, to chase a moving target that traces a lemniscate (figure-eight) path in 3D space. No hand-crafted controllers. No motion planning. Just a reward signal and 1,000,000 steps of SAC.
 
-The policy ends up robust to two sources of uncertainty it was trained with throughout:
+The policy ends up robust to three sources of uncertainty it was trained with throughout:
 - **Observation noise** — the agent never sees the true joint state, only a noisy version
 - **Control delay** — what the arm executes right now is what the agent decided 2 steps ago
+- **Action noise** — small Gaussian noise is added to every action before execution, simulating motor imprecision
 
 ---
 
@@ -82,7 +83,7 @@ z(t) = cz                   ← fixed height
 
 Parameters: `centre=(0.496, 0.134, 0.579)`, `scale_x=0.10`, `scale_y=0.07`, `period=8.0s`
 
-A circle was rejected early — constant curvature and constant angular velocity mean a policy can get away with spinning joints at fixed speed. The figure-eight has direction reversals and non-constant curvature, so the policy has to actually track.
+A circle with constant curvature and constant angular velocity means a policy can get away with spinning joints at a fixed speed. The figure-eight has direction reversals and varying curvature, so the policy must actively track.
 
 Analytical velocity is derived and fed directly to the agent so it knows not just where the target is, but where it's heading next. The policy is purely reactive (no future waypoints), which is harder but more general.
 
@@ -96,11 +97,13 @@ Analytical velocity is derived and fed directly to the agent so it knows not jus
 3  end-effector XYZ position
 ```
 
-Including target velocity was important — without it the agent lags on the fast direction-reversal parts of the figure-eight. Including the tracking error explicitly wasn't needed; the agent learns to compute it from the state.
+Including target velocity was important — without it, the agent lags on the fast direction-reversal parts of the figure-eight. Including the tracking error explicitly wasn't needed; the agent learns to compute it from the state.
 
 ### Action space
 
-Normalised joint velocity commands `[-1, 1]`, scaled by `3.14 rad/s` per joint. Velocity control rather than torque control — simpler, more stable, and doesn't require tuning a separate low-level controller.
+Normalised joint velocity commands `[-1, 1]`, scaled by `3.14 rad/s` per joint. Velocity control rather than torque control is simpler, more stable, and doesn't require tuning a separate low-level controller.
+
+Each action goes through two stages before reaching the joints. First, Gaussian noise (`σ = 0.001`) is added to simulate motor imprecision — the arm never executes exactly what was commanded. Second, the noisy action enters a 2-step delay buffer, so what actually moves the joints is what was decided 2 timesteps ago. The policy learns to compensate for both without any explicit knowledge that they exist.
 
 ### Reward
 
@@ -124,15 +127,17 @@ Policy: `[256, 256]` MLP. Normalised observations and rewards via `VecNormalize`
 
 ### Uncertainty
 
-**Observation noise** (`σ = 0.002`) on joint positions and velocities — mimics encoder noise in real hardware.
+**Observation noise** (`σ = 0.002`) on joint positions and velocities mimics encoder noise in real hardware.
+
+**Action noise** (`σ = 0.001`) added to every joint command before execution simulates motor imprecision — the arm never moves exactly as instructed.
 
 **Control delay** (2 steps) via a `collections.deque` action buffer — the arm executes what was commanded 2 timesteps ago. This is genuinely hard for classical controllers and something the RL policy handles implicitly by learning to anticipate.
 
-Both are present during training, so the policy is robust to them rather than just exposed to them at eval time.
+All three are present during training, so the policy is robust to them rather than just exposed to them at eval time.
 
 ### The hardest bug
 
-`VecNormalize` running statistics must be saved at the **exact moment** the best model checkpoint is written. If you save them at the end of training instead, the normalisation has drifted and the loaded policy produces garbage — we measured 40cm error from a well-trained model this way.
+`VecNormalize` running statistics must be saved at the **exact moment** the best model checkpoint is written. If you save them at the end of training, the normalisation may have drifted, resulting in a policy that performs poorly — I measured a 40cm error from a well-trained model this way.
 
 Fixed with a custom `SaveVecNormalizeCallback` that hooks into `EvalCallback` and saves matching stats every time a new best model is found.
 
