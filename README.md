@@ -2,16 +2,7 @@
 
 A UR5e robotic arm learning to trace a figure-eight in MuJoCo, trained from scratch using SAC with observation noise and control delay baked in from day one.
 
----
-
-## What it does
-
-The arm starts from a resting position and learns, purely through trial and error, to chase a moving target that traces a lemniscate (figure-eight) path in 3D space. No hand-crafted controllers. No motion planning. Just a reward signal and 1,000,000 steps of SAC.
-
-The policy ends up robust to three sources of uncertainty it was trained with throughout:
-- **Observation noise** — the agent never sees the true joint state, only a noisy version
-- **Control delay** — what the arm executes right now is what the agent decided 2 steps ago
-- **Action noise** — small Gaussian noise is added to every action before execution, simulating motor imprecision
+![Tracking demo](results/demo.gif)
 
 ---
 
@@ -23,10 +14,21 @@ The policy ends up robust to three sources of uncertainty it was trained with th
 | Std | 0.49 cm |
 | 95th percentile | 2.07 cm |
 | Max error | 2.77 cm |
+| Training | 1M steps, SAC |
+| Automated tests | 24 |
 
 ![Tracking Results](results/tracking_results.png)
 
-Video: `results/tracking_video.mp4`
+---
+
+## What it does
+
+The arm starts from a resting position and learns, purely through trial and error, to chase a moving target that traces a lemniscate (figure-eight) path in 3D space. No hand-crafted controllers. No motion planning. Just a reward signal and 1,000,000 steps of SAC.
+
+The policy ends up robust to three sources of uncertainty it was trained with throughout:
+- **Observation noise** — the agent never sees the true joint state, only a noisy version
+- **Control delay** — what the arm executes right now is what the agent decided 2 steps ago
+- **Action noise** — small Gaussian noise is added to every action before execution, simulating motor imprecision
 
 ---
 
