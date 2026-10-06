@@ -159,6 +159,50 @@ def save_video(stats, output_path="results/tracking_video.mp4", fps=25):
     else:
         print("No frames to save")
 
+def save_demo_gif(stats, output_path="results/demo.gif", fps=12, stride=2, max_seconds=20):
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure
+
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
+    ep = stats["episodes_data"][0]
+    frames, ee, target = ep["video_frames"], ep["ee_positions"], ep["target_positions"]
+    errors = ep["tracking_errors"]
+
+    if not frames:
+        print("No frames to build GIF from")
+        return
+
+    n = min(len(frames), len(ee))
+    idxs = list(range(0, n, stride))[: int(max_seconds * fps)]
+    h = frames[0].shape[0]
+
+    out = []
+    for i in idxs:
+        fig = Figure(figsize=(h / 100, h / 100), dpi=100)
+        canvas = FigureCanvasAgg(fig)
+        ax = fig.add_subplot(111)
+
+        ax.plot(target[:, 0], target[:, 1], color="0.85", linewidth=1.5)
+        ax.plot(ee[: i + 1, 0], ee[: i + 1, 1], color="tab:green", linewidth=1.2, alpha=0.8, label="Actual")
+        ax.plot(target[: i + 1, 0], target[: i + 1, 1], color="tab:red", linewidth=2, label="Target")
+        ax.plot(ee[i, 0], ee[i, 1], "o", color="tab:green", markersize=7)
+
+        ax.set_aspect("equal")
+        ax.set_xlabel("X (m)")
+        ax.set_ylabel("Y (m)")
+        ax.set_title(f"Tracking error: {errors[i] * 100:.2f} cm")
+        ax.legend(loc="upper right", fontsize=8)
+        ax.grid(alpha=0.3)
+        fig.tight_layout()
+
+        canvas.draw()
+        plot_img = np.asarray(canvas.buffer_rgba())[:, :, :3]
+        out.append(np.hstack([frames[i], plot_img]))
+
+    imageio.mimsave(output_path, out, fps=fps, loop=0)
+    print(f"Saved GIF to {output_path}")
+
 
 def main():
     print("Evaluating...")
@@ -177,6 +221,9 @@ def main():
 
     print("Saving video...")
     save_video(stats)
+
+    print("Building demo GIF...")
+    save_demo_gif(stats)
 
     print("\nDone!")
 
