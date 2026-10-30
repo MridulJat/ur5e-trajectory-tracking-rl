@@ -14,11 +14,14 @@ ENV MUJOCO_GL=osmesa \
 
 WORKDIR /app
 
-# CPU-only torch. Without this the image pulls CUDA and lands around 2.5GB
-COPY requirements.txt .
+# CPU-only torch. Without this the image pulls CUDA and lands around 2.5GB.
+# Installed on its own so the PyTorch index is never consulted for other packages
 RUN pip install --no-cache-dir \
-        --extra-index-url https://download.pytorch.org/whl/cpu \
-        -r requirements.txt
+        --index-url https://download.pytorch.org/whl/cpu \
+        torch
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
