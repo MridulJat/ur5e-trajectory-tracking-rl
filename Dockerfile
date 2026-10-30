@@ -18,7 +18,7 @@ WORKDIR /app
 # Installed on its own so the PyTorch index is never consulted for other packages
 RUN pip install --no-cache-dir \
         --index-url https://download.pytorch.org/whl/cpu \
-        torch
+        torch==2.15.0
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
