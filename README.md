@@ -159,6 +159,19 @@ Full list in `requirements.txt`.
 
 ---
 
+## Running with Docker
+
+The image installs CPU-only PyTorch and configures MuJoCo for headless software
+rendering, so it runs anywhere without a display or GPU.
+
+```bash
+docker build -t ur5e-rl .
+docker run --rm ur5e-rl                      # runs evaluate.py
+docker run --rm ur5e-rl pytest tests/ -v     # runs the test suite
+```
+
+---
+
 ## Continuous integration
 
 The 24-test suite runs on every push and pull request via GitHub Actions, with
