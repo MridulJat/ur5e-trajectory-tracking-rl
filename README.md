@@ -1,5 +1,7 @@
 # UR5e Figure-Eight Tracking with Reinforcement Learning
 
+![tests](https://github.com/MridulJat/ur5e-trajectory-tracking-rl/actions/workflows/tests.yml/badge.svg)
+
 A UR5e robotic arm learning to trace a figure-eight in MuJoCo, trained from scratch using SAC with observation noise and control delay baked in from day one.
 
 ![Tracking demo](results/demo.gif)
@@ -154,6 +156,13 @@ PyTorch            (installed as SB3 dependency)
 ```
 
 Full list in `requirements.txt`.
+
+---
+
+## Continuous integration
+
+The 24-test suite runs on every push and pull request via GitHub Actions, with
+MuJoCo configured for headless rendering on the runner.
 
 ---
 
