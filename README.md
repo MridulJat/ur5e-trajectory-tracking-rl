@@ -150,7 +150,7 @@ Fixed with a custom `SaveVecNormalizeCallback` that hooks into `EvalCallback` an
 ## Requirements
 
 ```
-Python 3.9+
+Python 3.13
 MuJoCo 3.x        (installs via pip)
 PyTorch            (installed as SB3 dependency)
 ```
